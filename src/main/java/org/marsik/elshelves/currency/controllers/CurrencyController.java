@@ -1,10 +1,14 @@
 package org.marsik.elshelves.currency.controllers;
 
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 
 import org.javamoney.moneta.FastMoney;
 import org.marsik.elshelves.currency.dtos.SumRequest;
 import org.marsik.elshelves.currency.dtos.TimedSumRequest;
+import org.marsik.elshelves.currency.services.OpenExchangeRatesClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/")
 public class CurrencyController {
+    @Autowired
+    OpenExchangeRatesClient openExchangeRatesClient;
+
     @RequestMapping("/status")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
@@ -27,8 +34,8 @@ public class CurrencyController {
     @RequestMapping("/convert")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public MonetaryAmount sum(@RequestParam("currency") String currency, @RequestParam("value") String value) {
-        return FastMoney.parse(value);
+    public MonetaryAmount convert(@RequestParam("currency") String currency, @RequestParam("value") String value) {
+        return openExchangeRatesClient.convert(FastMoney.parse(value), Monetary.getCurrency(currency));
     }
 
     @RequestMapping(value = "/sum", method = RequestMethod.POST)
